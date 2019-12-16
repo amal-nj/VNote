@@ -1,19 +1,40 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { TabScreen } from "./components/TabScreen";
+import SigninScreen from "./components/SigninScreen";
+import RegisterScreen from "./components/RegisterScreen";
+import { Provider as PaperProvider } from "react-native-paper";
+import { Provider } from "react-redux";
+import store from "./redux/store";
+import React from "react";
+import AuthLoadingScreen from "./components/AuthLoadingScreen";
+import { createAppContainer, createSwitchNavigator } from "react-navigation";
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-    </View>
-  );
-}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+const AuthStack = createSwitchNavigator({
+  Signin: SigninScreen,
+  Register: RegisterScreen
 });
+const AppContainer = createAppContainer(
+  createSwitchNavigator(
+    {
+      Starter: AuthLoadingScreen,
+      App: TabScreen,
+      Auth: AuthStack
+    },
+    {
+      initialRouteName: "Starter"
+    }
+  )
+);
+
+export default class App extends React.Component {
+ 
+  render() {
+    return (
+      <Provider store={store}>
+        <PaperProvider>
+          <AppContainer />
+        </PaperProvider>
+      </Provider>
+    );
+  }
+}
