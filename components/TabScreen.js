@@ -9,7 +9,7 @@ import SettingScreen from "./SettingScreen";
 import ChangePasswordScreen from "./ChangePasswordScreen";
 import PostModal from "./PostModal";
 import EditModal from "./EditModal";
-
+import NotificationScreen from "./NotificationScreen";
 // const SignoutScreen = () => {}
 
 const style = StyleSheet.create({
@@ -73,9 +73,21 @@ export const TabScreen = createBottomTabNavigator(
 
       navigationOptions: {
         tabBarLabel: "Settings",
-
         tabBarIcon: ({ tintColor }) => (
           <Ionicons name="ios-settings" color={tintColor} size={25} />
+        )
+      }
+    },
+    Notify: {
+      screen: NotificationScreen,
+      navigationOptions: {
+        tabBarLabel: "Notifications",
+        tabBarIcon: ({ tintColor }) => (
+          <Ionicons
+            name="ios-notifications"
+            color={tintColor}
+            size={25}
+          />
         )
       }
     }

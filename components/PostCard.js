@@ -29,7 +29,7 @@ export default class PostCard extends Component {
           onPress: () => {
               console.log("id",this.props.post._id)
             fetch(
-                `https://vnote-api.herokuapp.com/api/post/delete/${this.props.post._id}`,
+                `http://93f22bba.ngrok.io/api/post/delete/${this.props.post._id}`,
                 {
                   method: "DELETE",
                   headers: {
@@ -45,7 +45,7 @@ export default class PostCard extends Component {
                 })
                 .then(async res => {
                   console.log("deleteing post");
-                  this.updatePosts();
+                  // this.updatePosts();
                 })
                 .catch(async err => {
                   await Alert.alert("Error deleting post","Something went wrong");
@@ -65,52 +65,52 @@ export default class PostCard extends Component {
     );
 
     }
-  async updatePosts() {
-    function getDistanceFromLatLonInm(lat1, lon1, lat2, lon2) {
-      var R = 6371; // Radius of the earth in km
-      var dLat = deg2rad(lat2 - lat1); // deg2rad below
-      var dLon = deg2rad(lon2 - lon1);
-      var a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(deg2rad(lat1)) *
-          Math.cos(deg2rad(lat2)) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
-      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      var d = R * c; // Distance in km
-      return d * 1000;
-    }
+  // async updatePosts() {
+  //   function getDistanceFromLatLonInm(lat1, lon1, lat2, lon2) {
+  //     var R = 6371; // Radius of the earth in km
+  //     var dLat = deg2rad(lat2 - lat1); // deg2rad below
+  //     var dLon = deg2rad(lon2 - lon1);
+  //     var a =
+  //       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+  //       Math.cos(deg2rad(lat1)) *
+  //         Math.cos(deg2rad(lat2)) *
+  //         Math.sin(dLon / 2) *
+  //         Math.sin(dLon / 2);
+  //     var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  //     var d = R * c; // Distance in km
+  //     return d * 1000;
+  //   }
 
-    function deg2rad(deg) {
-      return deg * (Math.PI / 180);
-    }
+  //   function deg2rad(deg) {
+  //     return deg * (Math.PI / 180);
+  //   }
 
-    try {
-      let limit = 10;
-      let currentLocation = store.getState().location;
-      this.props.updatePosts();
-      let posts = store.getState().posts;
-    //   console.log("store posts", posts);
+  //   try {
+  //     let limit = 10;
+  //     let currentLocation = store.getState().location;
+  //     this.props.updatePosts();
+  //     let posts = store.getState().posts;
+  //   //   console.log("store posts", posts);
 
-      let filterdPosts = posts.filter(post => {
-        return (
-          limit >
-          getDistanceFromLatLonInm(
-            post.location.lat,
-            post.location.lng,
-            currentLocation.lat,
-            currentLocation.lng
-          )
-        );
-      });
-      if (JSON.stringify(posts) !== JSON.stringify(filterdPosts)) {
-        store.dispatch(setFilteredPosts(filterdPosts));
-      }
-    //   console.log("filtered posts", filterdPosts);
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  //     let filterdPosts = posts.filter(post => {
+  //       return (
+  //         limit >
+  //         getDistanceFromLatLonInm(
+  //           post.location.lat,
+  //           post.location.lng,
+  //           currentLocation.lat,
+  //           currentLocation.lng
+  //         )
+  //       );
+  //     });
+  //     if (JSON.stringify(posts) !== JSON.stringify(filterdPosts)) {
+  //       store.dispatch(setFilteredPosts(filterdPosts));
+  //     }
+  //   //   console.log("filtered posts", filterdPosts);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // }
   componentDidMount() {
     this.getId();
   }
@@ -122,7 +122,6 @@ export default class PostCard extends Component {
         <Card.Actions>
           <Button  onPress={() => this.props.navigation.navigate("EditModal",{
               post: this.props.post,
-              updatePosts: ()=>this.props.updatePosts()
             })}>Edit</Button>
           <Button onPress={this.deletePost}>Delete</Button>
         </Card.Actions>

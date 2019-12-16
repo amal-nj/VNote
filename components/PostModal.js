@@ -24,7 +24,7 @@ export default class PostModal extends React.Component {
         }
       };
       let token=await AsyncStorage.getItem('userToken')
-      fetch(`https://vnote-api.herokuapp.com/api/post`, {
+      fetch(`http://93f22bba.ngrok.io/api/post`, {
         method: "POST",
         body: JSON.stringify(post),
         headers: {
@@ -40,7 +40,7 @@ export default class PostModal extends React.Component {
           }
         })
         .then(async res => {
-         navigation.getParam('updatePosts', 'default value')()
+        //  navigation.getParam('updatePosts', 'default value')()
          this.props.navigation.goBack();
 
         })

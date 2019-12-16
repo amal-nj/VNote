@@ -23,6 +23,10 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "android": {
+      "package": "vnote.api",
+      "googleServicesFile": "./google-services.json"
+    },
     "ios": {
       "supportsTablet": true
     }

@@ -16,19 +16,126 @@ import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
 import store from "../redux/store";
 import PostCard from "./PostCard";
+import { Notifications } from "expo";
+import * as Permissions from "expo-permissions";
+import Constants from "expo-constants";
+
 var counter = 1;
+const PUSH_REGISTRATION_ENDPOINT = "https://vnote-api.herokuapp.com/token";
+const MESSAGE_ENPOINT = "https://vnote-api.herokuapp.com/message";
+import SocketIOClient from "socket.io-client";
+
 class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      name: ""
+      name: "",
+      notification: null,
+      messageText: ""
     };
-    this.getPosts=this.getPosts.bind(this)
+    this.getPosts = this.getPosts.bind(this);
+    this.socket = SocketIOClient("http://93f22bba.ngrok.io");
+    this.socket.on("newPost", msg => {
+      // console.log("hello to you to",msg);
+      let currentLocation = store.getState().location;
+      console.log("I'm triggered");
+      let limit = 10;
+      if (
+        getDistanceFromLatLonInm(
+          msg.lat,
+          msg.lng,
+          currentLocation.lat,
+          currentLocation.lng
+        ) < limit
+      ) {
+        console.log("true");
+
+        this.getPosts();
+      }
+    });
   }
 
   _bootstrap = async () => {
     const userName = "Amal";
     this.setState({ name: userName });
+  };
+
+  handleNotification = notification => {
+    if(notification.origin==="received"){
+      console.log("a badge should be added!")
+    }
+    else{
+      this.props.navigation.navigate('Notify')
+    }
+    this.setState({ notification });
+  };
+
+  // handleChangeText = text => {
+  //   this.setState({ messageText: text });
+  // };
+
+  // sendMessage = async () => {
+  //   fetch(MESSAGE_ENPOINT, {
+  //     method: "POST",
+  //     headers: {
+  //       Accept: "application/json",
+  //       "Content-Type": "application/json"
+  //     },
+  //     body: JSON.stringify({
+  //       message: this.state.messageText
+  //     })
+  //   });
+  //   this.setState({ messageText: "" });
+  // };
+
+  registerForPushNotificationsAsync = async () => {
+    if (Constants.isDevice) {
+      const { status: existingStatus } = await Permissions.getAsync(
+        Permissions.NOTIFICATIONS
+      );
+      let finalStatus = existingStatus;
+      if (existingStatus !== "granted") {
+        const { status } = await Permissions.askAsync(
+          Permissions.NOTIFICATIONS
+        );
+        finalStatus = status;
+      }
+      if (finalStatus !== "granted") {
+        alert("Failed to get push token for push notification!");
+        return;
+      }
+      let token = await Notifications.getExpoPushTokenAsync();
+      // console.log(token);
+      // this.setState({expoPushToken: token});
+
+      // const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+      // if (status !== "granted") {
+      //   return;
+      // }
+      // let token = await Notifications.getExpoPushTokenAsync();
+      this.notificationSubscription = Notifications.addListener(
+        this.handleNotification
+      );
+
+      return fetch(PUSH_REGISTRATION_ENDPOINT, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          token: {
+            value: token
+          },
+          user: {
+            username: "warly",
+            name: "Dan Ward"
+          }
+        })
+      });
+    } else {
+      alert("Must use physical device for Push Notifications");
+    }
   };
 
   onPress = async () => {
@@ -46,7 +153,7 @@ class HomeScreen extends React.Component {
     id = JSON.parse(id)._id;
 
     console.log(id);
-    fetch("https://vnote-api.herokuapp.com/api/post", {
+    fetch("http://93f22bba.ngrok.io/api/post", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -64,7 +171,6 @@ class HomeScreen extends React.Component {
         // console.log("initial post fetch", res);
         store.dispatch(setPosts(res));
         this.onPress();
-
       })
       .catch(async err => {
         console.log("Error", err);
@@ -77,11 +183,11 @@ class HomeScreen extends React.Component {
   componentDidMount() {
     this._bootstrap();
     this.getPosts();
-
+    this.registerForPushNotificationsAsync();
   }
 
   render() {
-    const sortedList=store.getState().filteredPosts.reverse()
+    const sortedList = store.getState().filteredPosts.reverse();
     return (
       <View style={styles.container}>
         <Text>Welcome {this.state.name}</Text>
@@ -89,16 +195,23 @@ class HomeScreen extends React.Component {
         <SafeAreaView style={styles.container}>
           <ScrollView style={styles.scrollView}>
             {sortedList.map((post, key) => (
-              <PostCard key={key} post={post} updatePosts={this.getPosts} navigation={this.props.navigation}/>
+              <PostCard
+                key={key}
+                post={post}
+                updatePosts={this.getPosts}
+                navigation={this.props.navigation}
+              />
             ))}
           </ScrollView>
         </SafeAreaView>
         <FAB
           style={styles.fab}
           icon="plus"
-          onPress={() => this.props.navigation.navigate("PostModal",{
-              updatePosts: ()=>this.getPosts()
-            })}
+          onPress={() =>
+            this.props.navigation.navigate("PostModal", {
+              updatePosts: () => this.getPosts()
+            })
+          }
         />
       </View>
     );
@@ -181,7 +294,6 @@ TaskManager.defineTask("location", ({ data, error }) => {
       // console.log("store posts", posts);
 
       let filterdPosts = posts.filter(post => {
-  
         return (
           limit >
           getDistanceFromLatLonInm(

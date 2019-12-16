@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "328513083478",
+    "firebase_url": "https://vnote-api.firebaseio.com",
+    "project_id": "vnote-api",
+    "storage_bucket": "vnote-api.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:328513083478:android:7e120798876089259f43f7",
+        "android_client_info": {
+          "package_name": "vnote.api"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "328513083478-n6rbq02hg0nuhg698ssl8pj90ql7374k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyHh0SC4wNF_COvRhLFzngi8i5tsjIUf8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "328513083478-n6rbq02hg0nuhg698ssl8pj90ql7374k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
