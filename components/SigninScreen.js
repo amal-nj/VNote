@@ -36,7 +36,7 @@ export default class SigninScreen extends React.Component {
       };
       this.setState({ spinner: true });
 
-      fetch("https://vnote-api.herokuapp.com/api/auth/login", {
+      fetch("https://37dde31d.ngrok.io/api/auth/login", {
         method: "POST",
         body: JSON.stringify(user),
         headers: {

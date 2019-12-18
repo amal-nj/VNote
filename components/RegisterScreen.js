@@ -40,7 +40,7 @@ export default class RegisterScreen extends React.Component {
         password: this.state.password
       };
       
-      fetch("https://vnote-api.herokuapp.com/api/auth/register",{method: "POST",body: JSON.stringify(user), headers: {
+      fetch("https://37dde31d.ngrok.io/api/auth/register",{method: "POST",body: JSON.stringify(user), headers: {
         'Content-Type': 'application/json'
       }})
       .then(data=>{

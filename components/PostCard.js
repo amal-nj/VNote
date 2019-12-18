@@ -29,7 +29,7 @@ export default class PostCard extends Component {
           onPress: () => {
               console.log("id",this.props.post._id)
             fetch(
-                `http://93f22bba.ngrok.io/api/post/delete/${this.props.post._id}`,
+                `https://37dde31d.ngrok.io/api/post/delete/${this.props.post._id}`,
                 {
                   method: "DELETE",
                   headers: {
@@ -117,6 +117,7 @@ export default class PostCard extends Component {
   render() {
     //   const date=new Date(this.props.post.updatedAt)
     //   console.log("hours", date.getHours())
+    console.log("here")
     let actions =
       this.props.post.user._id === this.state.userid ? (
         <Card.Actions>
@@ -129,12 +130,14 @@ export default class PostCard extends Component {
         <Text></Text>
       );
     return (
-      <Card>
-        <Card.Title
+      <Card onPress={()=>{console.log(this.props.navigation)
+          this.props.navigation.navigate("usersProfile",{user: this.props.post.user})}}>
+        <Card.Title 
           title={`@${this.props.post.user.username}`}
           subtitle={this.props.post.updatedAt}
           right={props => (
             <Avatar.Image
+            
               {...props}
               size={50}
               source={{

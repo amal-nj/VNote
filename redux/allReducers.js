@@ -12,6 +12,8 @@ const locationReducer = (state = {}, action) => {
 const postsReducer = (state = [], action) => {
   switch (action.type) {
     case "setPosts":
+      console.log("notifications set");
+
       return action.payload;
     default:
       return state;
@@ -27,10 +29,31 @@ const filteredPostsReducer = (state = [], action) => {
   }
 };
 
+const notifictionsReducer = (state = [], action) => {
+  switch (action.type) {
+    case "setNotifications":
+      console.log("notifications set");
+      return action.payload;
+    default:
+      return state;
+  }
+};
+
+const filteredNotificationsReducer = (state = [], action) => {
+  switch (action.type) {
+    case "setFilteredNotifications":
+      return action.payload;
+    default:
+      return state;
+  }
+};
+
 const allReducers = combineReducers({
   location: locationReducer,
   posts: postsReducer,
-  filteredPosts: filteredPostsReducer
+  filteredPosts: filteredPostsReducer,
+  notifications: notifictionsReducer,
+  filteredNotifications: filteredNotificationsReducer
 });
 
 export default allReducers;

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { connect } from "react-redux";
 import { FAB } from "react-native-paper";
-import { setLocation, setPosts, setFilteredPosts } from "../redux/actions";
+import { setLocation, setPosts, setFilteredPosts, setNotifications, setFilteredNotifications } from "../redux/actions";
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
 import store from "../redux/store";
@@ -21,7 +21,7 @@ import * as Permissions from "expo-permissions";
 import Constants from "expo-constants";
 
 var counter = 1;
-const PUSH_REGISTRATION_ENDPOINT = "https://vnote-api.herokuapp.com/token";
+const PUSH_REGISTRATION_ENDPOINT = "https://37dde31d.ngrok.io/token/:id";
 const MESSAGE_ENPOINT = "https://vnote-api.herokuapp.com/message";
 import SocketIOClient from "socket.io-client";
 
@@ -34,12 +34,12 @@ class HomeScreen extends React.Component {
       messageText: ""
     };
     this.getPosts = this.getPosts.bind(this);
-    this.socket = SocketIOClient("http://93f22bba.ngrok.io");
+    this.socket = SocketIOClient("https://37dde31d.ngrok.io/");
     this.socket.on("newPost", msg => {
-      // console.log("hello to you to",msg);
       let currentLocation = store.getState().location;
       console.log("I'm triggered");
-      let limit = 10;
+      //limit here is higher cuz user may not be in the range now but will reach it later
+      let limit = 30;
       if (
         getDistanceFromLatLonInm(
           msg.lat,
@@ -52,6 +52,20 @@ class HomeScreen extends React.Component {
 
         this.getPosts();
       }
+    });
+    this.socket.on("notification1", async receivedid => {
+      console.log("new notification")
+
+      let id = await AsyncStorage.getItem("user");
+      id = JSON.parse(id)._id;
+      //if the new notification in the data base belongs to this user 
+      //then get it from the data base
+      if(id===receivedid){
+        console.log("id match")
+
+        this.getNotifications()
+      }
+  
     });
   }
 
@@ -67,7 +81,7 @@ class HomeScreen extends React.Component {
     else{
       this.props.navigation.navigate('Notify')
     }
-    this.setState({ notification });
+    // this.setState({ notification });
   };
 
   // handleChangeText = text => {
@@ -104,35 +118,30 @@ class HomeScreen extends React.Component {
         alert("Failed to get push token for push notification!");
         return;
       }
-      let token = await Notifications.getExpoPushTokenAsync();
-      // console.log(token);
-      // this.setState({expoPushToken: token});
-
-      // const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
-      // if (status !== "granted") {
-      //   return;
-      // }
-      // let token = await Notifications.getExpoPushTokenAsync();
+      let Expotoken = await Notifications.getExpoPushTokenAsync();
+     
       this.notificationSubscription = Notifications.addListener(
         this.handleNotification
       );
-
-      return fetch(PUSH_REGISTRATION_ENDPOINT, {
+      let id = await AsyncStorage.getItem("user");
+      let token = await AsyncStorage.getItem("userToken");
+      id = JSON.parse(id)._id;
+        console.log("token function invoked")
+      fetch(`https://37dde31d.ngrok.io/api/notifications/token/${id}`, {
         method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json"
-        },
         body: JSON.stringify({
-          token: {
-            value: token
-          },
-          user: {
-            username: "warly",
-            name: "Dan Ward"
-          }
-        })
-      });
+          expoToken: Expotoken
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      }).then((data)=>{
+        // console.log(data)
+      })
+      .catch(err=>{
+        // console.log(err)
+      })
     } else {
       alert("Must use physical device for Push Notifications");
     }
@@ -151,9 +160,9 @@ class HomeScreen extends React.Component {
     let id = await AsyncStorage.getItem("user");
     let token = await AsyncStorage.getItem("userToken");
     id = JSON.parse(id)._id;
-
+    console.log("get posts token:",token)
     console.log(id);
-    fetch("http://93f22bba.ngrok.io/api/post", {
+    fetch( "https://37dde31d.ngrok.io/api/post", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -169,6 +178,7 @@ class HomeScreen extends React.Component {
       })
       .then(res => {
         // console.log("initial post fetch", res);
+        console.log(res)
         store.dispatch(setPosts(res));
         this.onPress();
       })
@@ -180,31 +190,85 @@ class HomeScreen extends React.Component {
         );
       });
   };
+  getNotifications=async()=>{
+    let id = await AsyncStorage.getItem("user");
+    let token = await AsyncStorage.getItem("userToken");
+    id = JSON.parse(id)._id;
+    console.log("getting notifications...")
+    fetch( `https://37dde31d.ngrok.io/api/notifications/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(data => {
+        if (data.ok) {
+          return data.json();
+        } else {
+          throw new Error("Something went wrong");
+        }
+      })
+      .then(res => {
+        console.log("operation successeded")
+
+        console.log("notifications:", res)
+        store.dispatch(setNotifications(res.notifications));
+        filterNotifications()
+
+      })
+      .catch(async err => {
+        console.log("Error", err);
+        await Alert.alert(
+          "Error",
+          "Something went wrong while fetching user's notifications"
+        );
+      });
+
+  }
   componentDidMount() {
     this._bootstrap();
     this.getPosts();
+    this.getNotifications();
+
     this.registerForPushNotificationsAsync();
   }
 
   render() {
     const sortedList = store.getState().filteredPosts.reverse();
+    console.log(sortedList)
+
     return (
       <View style={styles.container}>
         <Text>Welcome {this.state.name}</Text>
         <Text>to Home Screen</Text>
         <SafeAreaView style={styles.container}>
           <ScrollView style={styles.scrollView}>
-            {sortedList.map((post, key) => (
+            {sortedList.map((post, key) => {
+            
+            console.log("poooost",post)
+            return (
+
               <PostCard
                 key={key}
                 post={post}
                 updatePosts={this.getPosts}
                 navigation={this.props.navigation}
               />
-            ))}
+            )
+            })}
           </ScrollView>
         </SafeAreaView>
         <FAB
+          style={styles.fab}
+          icon="plus"
+          onPress={() =>
+            this.props.navigation.navigate("NotfModal", {
+              updatePosts: () => this.getPosts()
+            })
+          }
+        />
+        {/* <FAB
           style={styles.fab}
           icon="plus"
           onPress={() =>
@@ -212,7 +276,7 @@ class HomeScreen extends React.Component {
               updatePosts: () => this.getPosts()
             })
           }
-        />
+        />  */}
       </View>
     );
   }
@@ -269,47 +333,123 @@ function deg2rad(deg) {
 }
 
 console.log("here");
-TaskManager.defineTask("location", ({ data, error }) => {
-  if (error) {
-    // Error occurred - check `error.message` for more details.
-    return;
-  }
-  if (data) {
-    try {
-      const { locations } = data;
-      // do something with the locations captured in the background
-      console.log("----------" + counter + "----------");
-      counter++;
-      // console.log("Received new locations", data);
-      location = data.locations[0].coords;
-      // console.log('state', store.getState())
-      let limit = 10;
-      store.dispatch(
-        setLocation({ lat: location.latitude, lng: location.longitude })
-      );
-
-      let currentLocation = store.getState().location;
-      console.log("current location:", currentLocation);
-      let posts = store.getState().posts;
-      // console.log("store posts", posts);
-
-      let filterdPosts = posts.filter(post => {
-        return (
-          limit >
-          getDistanceFromLatLonInm(
-            post.location.lat,
-            post.location.lng,
-            currentLocation.lat,
-            currentLocation.lng
-          )
-        );
-      });
-      if (JSON.stringify(posts) !== JSON.stringify(filterdPosts)) {
-        store.dispatch(setFilteredPosts(filterdPosts));
-      }
-      // console.log("filtered posts", filterdPosts);
-    } catch (err) {
-      console.log(err);
+try{
+  TaskManager.defineTask("location", async ({ data, error }) => {
+    if (error) {
+      // Error occurred - check `error.message` for more details.
+      return;
     }
+    if (data) {
+      try {
+        const { locations } = data;
+        // do something with the locations captured in the background
+        console.log("----------" + counter + "----------");
+        counter++;
+        // console.log("Received new locations", data);
+        location = data.locations[0].coords;
+        // console.log('state', store.getState())
+        let limit = 10;
+        store.dispatch(
+          setLocation({ lat: location.latitude, lng: location.longitude })
+        );
+  
+        let currentLocation = store.getState().location;
+        // console.log("current location:", currentLocation);
+        let posts = store.getState().posts;
+        // console.log("store posts", posts);
+  
+        let filterdPosts = posts.filter(post => {
+          return (
+            limit >
+            getDistanceFromLatLonInm(
+              post.location.lat,
+              post.location.lng,
+              currentLocation.lat,
+              currentLocation.lng
+            )
+          );
+        });
+        if (JSON.stringify(posts) !== JSON.stringify(filterdPosts)) {
+          store.dispatch(setFilteredPosts(filterdPosts));
+        }
+  
+     
+ //
+ //
+        filterNotifications()
+        // console.log("filtered posts", filterdPosts);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  });
+  
+}
+catch(err){
+  console.log("I'm just useless")
+}
+
+
+async function filterNotifications(){
+  let limit=10
+  let currentLocation = store.getState().location;
+
+  let notifications = store.getState().notifications;
+  // console.log("store posts", posts);
+  // console.log("notification", notifications)
+  let filterdNotifications = notifications.filter(notification => {
+    return (
+      limit >
+      getDistanceFromLatLonInm(
+        notification.location.lat,
+        notification.location.lng,
+        currentLocation.lat,
+        currentLocation.lng
+      )
+    );
+  });
+  // console.log("filtered notf",filterdNotifications)
+  let token = await AsyncStorage.getItem("userToken");
+
+  if (JSON.stringify(store.getState().filteredNotifications) !== JSON.stringify(filterdNotifications)) {
+    console.log("updating store with new notifications")
+    store.dispatch(setFilteredNotifications(filterdNotifications));
   }
-});
+    filterdNotifications.forEach(note=>{
+      // console.log("found unseen notifications here")
+
+      if(!note.isReceived){
+        ///
+        console.log(note)
+        console.log("found unseen notifications")
+        fetch( `https://37dde31d.ngrok.io/api/notifications/notify/${note._id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          }
+        })
+          .then(data => {
+            if (data.ok) {
+              return data.json();
+            } else {
+              throw new Error("Something went wrong");
+            }
+          })
+          .then(res => {
+            console.log("notification sent")
+    
+            // console.log("notifications:", res)
+           
+          })
+          .catch(async err => {
+            console.log("Error", err);
+            // await Alert.alert(
+            //   "Error",
+            //   "Something went wrong while fetching user's notifications"
+            // );
+          });
+        ///
+      }
+    })
+}

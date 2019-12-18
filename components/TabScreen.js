@@ -8,8 +8,11 @@ import HomeScreen from "./HomeScreen";
 import SettingScreen from "./SettingScreen";
 import ChangePasswordScreen from "./ChangePasswordScreen";
 import PostModal from "./PostModal";
+import NotfModal from "./NotfModal";
+
 import EditModal from "./EditModal";
 import NotificationScreen from "./NotificationScreen";
+import ProfileScreen from './ProfileScreen';
 // const SignoutScreen = () => {}
 
 const style = StyleSheet.create({
@@ -50,6 +53,15 @@ const homeNavigator = createStackNavigator(
     },
     EditModal: {
       screen: EditModal,
+      mode: "modal"
+    },
+    NotfModal: {
+      screen: NotfModal,
+      mode: "modal"
+    }
+    ,
+    usersProfile: {
+      screen: ProfileScreen,
       mode: "modal"
     }
   },

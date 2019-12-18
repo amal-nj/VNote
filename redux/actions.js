@@ -12,11 +12,23 @@ export const setPosts = posts => {
   };
 };
 
-
 export const setFilteredPosts = filteredPosts => {
-    return {
-      type: "setFilteredPosts",
-      payload: filteredPosts
-    };
+  return {
+    type: "setFilteredPosts",
+    payload: filteredPosts
   };
-  
+};
+
+export const setNotifications = notifications => {
+  return {
+    type: "setNotifications",
+    payload: notifications
+  };
+};
+
+export const setFilteredNotifications = filteredNotifications => {
+  return {
+    type: "setFilteredNotifications",
+    payload: filteredNotifications
+  };
+};

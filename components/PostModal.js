@@ -24,7 +24,7 @@ export default class PostModal extends React.Component {
         }
       };
       let token=await AsyncStorage.getItem('userToken')
-      fetch(`http://93f22bba.ngrok.io/api/post`, {
+      fetch(`https://37dde31d.ngrok.io/api/post`, {
         method: "POST",
         body: JSON.stringify(post),
         headers: {
