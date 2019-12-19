@@ -26,6 +26,14 @@ export const setNotifications = notifications => {
   };
 };
 
+export const setShouldFilter = shouldFilter => {
+  return {
+    type: "setShouldFilter",
+    payload: shouldFilter
+  };
+};
+
+
 export const setFilteredNotifications = filteredNotifications => {
   return {
     type: "setFilteredNotifications",

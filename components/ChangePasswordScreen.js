@@ -3,13 +3,13 @@ import { Dimensions } from "react-native";
 import {
   KeyboardAvoidingView,
   View,
-  Button,
   Alert,
   Text,
   AsyncStorage,
-  StyleSheet
+  StyleSheet,
+  Image
 } from "react-native";
-import { HelperText, TextInput } from "react-native-paper";
+import { HelperText, TextInput, Button } from "react-native-paper";
 
 export default class ChangePasswordScreen extends React.Component {
   constructor(props) {
@@ -27,18 +27,25 @@ export default class ChangePasswordScreen extends React.Component {
   }
 
   _changeHandler = async () => {
-    let check=this.state.oldpassword && this.state.password && this.state.confirmpassword;
-  
-    if (check && this.state.password === this.state.confirmpassword && this.state.oldpassword!==this.state.password) {
+    let check =
+      this.state.oldpassword &&
+      this.state.password &&
+      this.state.confirmpassword;
+
+    if (
+      check &&
+      this.state.password === this.state.confirmpassword &&
+      this.state.oldpassword !== this.state.password
+    ) {
       const changes = {
-        password:this.state.oldpassword,
+        password: this.state.oldpassword,
         newPassword: this.state.password
       };
       this.setState({ spinner: true });
-      let id=await AsyncStorage.getItem('user')
-      let token=await AsyncStorage.getItem('userToken')
-      id=JSON.parse(id)._id
-      console.log(id)
+      let id = await AsyncStorage.getItem("user");
+      let token = await AsyncStorage.getItem("userToken");
+      id = JSON.parse(id)._id;
+      console.log(id);
       fetch(`https://vnote-api.herokuapp.com/api/auth/User/${id}`, {
         method: "PUT",
         body: JSON.stringify(changes),
@@ -55,18 +62,23 @@ export default class ChangePasswordScreen extends React.Component {
           }
         })
         .then(async res => {
-          await Alert.alert('Password changed', 'Your password has beed changed successfully');
+          await Alert.alert(
+            "Password changed",
+            "Your password has beed changed successfully"
+          );
           this.setState({ spinner: true });
           this.props.navigation.goBack();
         })
         .catch(async err => {
-          await Alert.alert("Invalid password", "Please enter your account's current password");
+          await Alert.alert(
+            "Invalid password",
+            "Please enter your account's current password"
+          );
 
           this.setState({ spinner: false });
 
           console.log("Error", err);
         });
-       
     } else {
       this.setState({ error: true });
     }
@@ -75,8 +87,18 @@ export default class ChangePasswordScreen extends React.Component {
   render() {
     return (
       <KeyboardAvoidingView style={{ flexGrow: 1 }} behavior="padding" enabled>
+        <Image
+          source={require("../assets/register.png")}
+          style={{
+            flex: 1,
+            width: null,
+            height: null,
+            resizeMode: "contain",
+            marginTop: -200
+          }}
+        ></Image>
         <View style={style.container}>
-          <Text>Change Password</Text>
+          <Text style={{ fontSize: 24, margin: 20 }}>Change Password</Text>
           <TextInput
             label="Current password"
             mode="outlined"
@@ -84,13 +106,26 @@ export default class ChangePasswordScreen extends React.Component {
             onChangeText={oldpassword => this.setState({ oldpassword })}
             style={style.input}
             value={this.state.oldpassword}
+            error={this.state.error && this.state.oldpassword === ""}
+            theme={{
+              colors: {
+                primary: "#003c3c",
+                underlineColor: "transparent"
+              }
+            }}
           />
           <HelperText
+            style={{ marginTop: -20 }}
             type="error"
             visible={this.state.error && this.state.oldpassword === ""}
           >
             Please enter your current password!
           </HelperText>
+          <HelperText
+            style={{ marginTop: 0 }}
+            type="error"
+            visible={false}
+          ></HelperText>
           <TextInput
             label="New password"
             mode="outlined"
@@ -98,16 +133,33 @@ export default class ChangePasswordScreen extends React.Component {
             onChangeText={password => this.setState({ password })}
             style={style.input}
             value={this.state.password}
+            error={
+              this.state.error &&
+              (this.state.password === "" || this.state.password < 6)
+            }
+            theme={{
+              colors: {
+                primary: "#003c3c",
+                underlineColor: "transparent"
+              }
+            }}
           />
           <HelperText
+            style={{ marginTop: -20 }}
             type="error"
-            visible={this.state.error && (this.state.password === "" || this.state.password<6)}
+            visible={
+              this.state.error &&
+              (this.state.password === "" || this.state.password < 6)
+            }
           >
             Password should contain at least 6 letters or digits
           </HelperText>
           <HelperText
+            style={{ marginTop: 0 }}
             type="error"
-            visible={this.state.error && this.state.password === this.state.oldpassword}
+            visible={
+              this.state.error && this.state.password === this.state.oldpassword
+            }
           >
             New password cannot match the old password!
           </HelperText>
@@ -118,14 +170,27 @@ export default class ChangePasswordScreen extends React.Component {
             onChangeText={confirmpassword => this.setState({ confirmpassword })}
             style={style.input}
             value={this.state.confirmpassword}
+            error={
+              this.state.error &&
+              (this.state.confirmpassword === "" ||
+                this.state.confirmpassword !== this.state.password)
+            }
+            theme={{
+              colors: {
+                primary: "#003c3c",
+                underlineColor: "transparent"
+              }
+            }}
           />
           <HelperText
+            style={{ marginTop: -20 }}
             type="error"
             visible={this.state.error && this.state.confirmpassword === ""}
           >
             Please confirm your password!
           </HelperText>
           <HelperText
+            style={{ marginTop: 0 }}
             type="error"
             visible={
               this.state.error &&
@@ -138,11 +203,21 @@ export default class ChangePasswordScreen extends React.Component {
           {this.state.spinner && (
             <Text style={style.spinnerTextStyle}>Processing ...</Text>
           )}
-          {!this.state.spinner && (
-            <Button title="Change" onPress={this._changeHandler} />
-          )}
-
         </View>
+        {!this.state.spinner && (
+          <Button
+            style={style.button}
+            theme={{
+              colors: {
+                primary: "#000",
+                underlineColor: "transparent"
+              }
+            }}
+            onPress={this._changeHandler}
+          >
+            Change
+          </Button>
+        )}
       </KeyboardAvoidingView>
     );
   }
@@ -154,7 +229,8 @@ const style = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    marginTop: -180
   },
   input: {
     backgroundColor: "#FFFFFF",
@@ -168,5 +244,9 @@ const style = StyleSheet.create({
   },
   spinnerTextStyle: {
     textAlign: "center"
+  },
+  button: {
+    backgroundColor: "#ffe800",
+    color: "#023333"
   }
 });

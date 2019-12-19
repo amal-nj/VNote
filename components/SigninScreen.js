@@ -3,13 +3,16 @@ import { Dimensions } from "react-native";
 import {
   KeyboardAvoidingView,
   View,
-  Button,
   Alert,
   Text,
   AsyncStorage,
-  StyleSheet
+  StyleSheet,
+  ImageBackground,
+  Image,
+  TouchableOpacity,
 } from "react-native";
-import { HelperText, TextInput } from "react-native-paper";
+import { HelperText, TextInput, Button } from "react-native-paper";
+import { ScrollView } from "react-native-gesture-handler";
 export default class SigninScreen extends React.Component {
   // static navigationOptions = {
   //     header: null,
@@ -36,7 +39,7 @@ export default class SigninScreen extends React.Component {
       };
       this.setState({ spinner: true });
 
-      fetch("https://37dde31d.ngrok.io/api/auth/login", {
+      fetch("https://vnote-api.herokuapp.com/api/auth/login", {
         method: "POST",
         body: JSON.stringify(user),
         headers: {
@@ -75,8 +78,17 @@ export default class SigninScreen extends React.Component {
 
   render() {
     return (
+    
       <KeyboardAvoidingView style={{ flexGrow: 1 }} behavior="padding" enabled>
+        <ScrollView contentContainerStyle={{ flex: 1}} >
+        <Image
+          source={require("../assets/signin2.png")}
+          style={{ flex: 1, width: null, height: null, resizeMode: "contain", marginTop: 20 }}
+        ></Image>
+        
         <View style={style.container}>
+        <Text style={{fontSize:25, fontFamily:'lalezar'}}>VNote</Text>
+
           <TextInput
             label="Email"
             mode="outlined"
@@ -84,8 +96,17 @@ export default class SigninScreen extends React.Component {
             onChangeText={email => this.setState({ email })}
             style={style.input}
             value={this.state.email}
+            error={this.state.error && !this.state.email.includes("@")}
+            theme={{
+                    colors: {
+                      primary:'#003c3c',
+                      underlineColor:'transparent',
+                      
+                    }
+                  }}
           />
           <HelperText
+          style={{ marginTop: -20 }}          
             type="error"
             visible={this.state.error && !this.state.email.includes("@")}
           >
@@ -99,8 +120,17 @@ export default class SigninScreen extends React.Component {
             style={style.input}
             placeholder="Password"
             value={this.state.password}
+            error={this.state.error && this.state.password === ""}
+            theme={{
+                    colors: {
+                      primary:'#003c3c',
+                      underlineColor:'transparent',
+                      
+                    }
+                  }}
           />
           <HelperText
+          style={{ marginTop: -20 }}
             type="error"
             visible={this.state.error && this.state.password === ""}
           >
@@ -111,28 +141,55 @@ export default class SigninScreen extends React.Component {
             <Text style={style.spinnerTextStyle}>Processing ...</Text>
           )}
           {!this.state.spinner && (
-            <Button title="Sign in!" onPress={this._signInHandler} />
+            <Button
+            dark={true}
+              onPress={this._signInHandler}
+              style={style.button}
+              theme={{
+                    colors: {
+                      primary:'#fff',
+                      underlineColor:'transparent',
+                      
+                    }
+                  }}
+            >Sign in</Button>
           )}
+          <Text style={{fontSize: 10, marginVertical:15}}>_________________     Don't have an account?     _________________</Text>
           <Button
-            title="Register"
             onPress={() => {
               this.props.navigation.navigate("Register");
             }}
-          />
+            theme={{
+                    colors: {
+                      primary:'#000',
+                      underlineColor:'transparent',
+                      
+                    }
+                  }}>Register</Button>
         </View>
+        </ScrollView>
       </KeyboardAvoidingView>
+   
     );
   }
 }
 
 const DEVICE_WIDTH = Dimensions.get("window").width;
+const  screenHeight= Dimensions.get('window').height;
 
 const style = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    marginTop: -70,
+    backgroundColor:'white'
+
   },
+  containerContent: {
+    height: screenHeight-10,
+    justifyContent: 'center',
+},
   input: {
     backgroundColor: "#FFFFFF",
     width: DEVICE_WIDTH - 100,
@@ -145,5 +202,10 @@ const style = StyleSheet.create({
   },
   spinnerTextStyle: {
     textAlign: "center"
+  },
+  button: {
+    backgroundColor: "#ffe800",
+    color: "#023333",
+
   }
 });

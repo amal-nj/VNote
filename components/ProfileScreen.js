@@ -1,6 +1,7 @@
 import React from "react";
-import { StyleSheet, View, Text, Button, AsyncStorage } from "react-native";
+import { StyleSheet, View, Text, AsyncStorage,ScrollView,Image } from "react-native";
 import { NavigationEvents } from "react-navigation";
+import {Button} from 'react-native-paper'
 
 export default class ProfileScreen extends React.Component {
   constructor(props) {
@@ -25,7 +26,7 @@ export default class ProfileScreen extends React.Component {
   async getFollowers() {
     let token = await AsyncStorage.getItem("userToken");
     fetch(
-      `https://37dde31d.ngrok.io/api/profile/getFollowers/${this.props.navigation.getParam("user","")._id}`,
+      `https://vnote-api.herokuapp.com/api/profile/getFollowers/${this.props.navigation.getParam("user","")._id}`,
       {
         method: "GET",
         headers: {
@@ -58,7 +59,7 @@ export default class ProfileScreen extends React.Component {
       let request = this.state.pageSate ? "follow" : "unfollow";
         console.log("passed condition")
       fetch(
-        `https://37dde31d.ngrok.io/api/profile/${request}/${this.props.navigation.getParam("user","")._id}`,
+        `https://vnote-api.herokuapp.com/api/profile/${request}/${this.props.navigation.getParam("user","")._id}`,
         {
           method: "POST",
           body:JSON.stringify({}),
@@ -80,15 +81,10 @@ export default class ProfileScreen extends React.Component {
         });
     }
   }
-  localFollow = (followingState) => {
+  localFollow = () => {
       let followers=this.state.followers
-      if(followingState=="Unfollow"){
-        
-      }
-      else{
-
-      }
-    this.setState({ pageSate: !this.pageState });
+     
+    this.setState({ pageSate: !this.state.pageState });
     
   };
 
@@ -101,25 +97,81 @@ export default class ProfileScreen extends React.Component {
       return <Text>{user.username}</Text>;
     });
     return (
-      <View style={styles.container}>
-        <NavigationEvents onWillBlur={this.updateFollowers} />
-        <Text>
-          Welcome {this.props.navigation.getParam("user", "").username}
-        </Text>
-        <Text>Followers</Text>
-        {followersList}
-        <Text>Following</Text>
-        {followingList}
-        <Button title={followingState} onPress={(followingState)=>this.localFollow(followingState)} />
+       <View style={styles.container}>
+       <NavigationEvents onWillBlur={this.updateFollowers} />
+
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={{ flex: 1 }}
+        >
+          <Image
+            source={require("../assets/profile.jpg")}
+            style={{
+              flex: 1,
+              width: null,
+              height: null,
+              resizeMode: "contain",
+              marginTop: 0
+            }}
+          ></Image>
+          <View style={styles.container2}>
+            <Text style={{ fontSize: 25 }}>@{this.props.navigation.getParam("user", "").username}</Text>
+            <View style={{ textAlign: "left", alignSelf: "stretch" }}>
+              <Text
+                style={{
+                  textAlign: "center",
+                  alignSelf: "stretch",
+                  padding: 1,
+                  marginVertical: 5,
+                }}
+              >______________________________________________________</Text>
+            </View>
+            <Text style={{fontSize:15,marginBottom:10,padding:5, paddingHorizontal:8}}>
+              Bio: Lorm tempore repellat eius veritatis qui nam quisquam neque,
+              omnis natus velit, hic dolorem quos? Cum, provident.
+            </Text>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-around" }}
+            >
+              {/* <Button
+              style={{
+                  backgroundColor: "#ffe800",
+                  color: "#023333",
+                  margin: 10
+                }}
+              
+                onPress={async () => {
+               this.localFollow()
+                }}
+                theme={{
+                  colors: {
+                    primary: "#000",
+                    underlineColor: "transparent"
+                  }
+                }}
+              >
+                {followingState}
+              </Button> */}
+            </View>
+          </View>
+        </ScrollView>
       </View>
+
     );
   }
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center"
+  },
+  container2: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: -200,
+    padding: 20,
+    alignSelf: "stretch"
   }
 });

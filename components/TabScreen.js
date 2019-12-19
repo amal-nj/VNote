@@ -3,7 +3,7 @@ import { View, Text, AsyncStorage, StyleSheet } from "react-native";
 import { Ionicons, SimpleLineIcons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "react-navigation-tabs";
 import { createStackNavigator } from "react-navigation-stack";
-
+import { Badge } from "react-native-paper";
 import HomeScreen from "./HomeScreen";
 import SettingScreen from "./SettingScreen";
 import ChangePasswordScreen from "./ChangePasswordScreen";
@@ -12,7 +12,7 @@ import NotfModal from "./NotfModal";
 
 import EditModal from "./EditModal";
 import NotificationScreen from "./NotificationScreen";
-import ProfileScreen from './ProfileScreen';
+import ProfileScreen from "./ProfileScreen";
 // const SignoutScreen = () => {}
 
 const style = StyleSheet.create({
@@ -58,8 +58,7 @@ const homeNavigator = createStackNavigator(
     NotfModal: {
       screen: NotfModal,
       mode: "modal"
-    }
-    ,
+    },
     usersProfile: {
       screen: ProfileScreen,
       mode: "modal"
@@ -76,7 +75,10 @@ export const TabScreen = createBottomTabNavigator(
       navigationOptions: {
         tabBarLabel: "Home",
         tabBarIcon: ({ tintColor }) => (
-          <Ionicons name="ios-home" color={tintColor} size={25} />
+          <View>
+           
+            <Ionicons name="ios-home" color={tintColor} size={25} />      
+          </View>
         )
       }
     },
@@ -95,11 +97,7 @@ export const TabScreen = createBottomTabNavigator(
       navigationOptions: {
         tabBarLabel: "Notifications",
         tabBarIcon: ({ tintColor }) => (
-          <Ionicons
-            name="ios-notifications"
-            color={tintColor}
-            size={25}
-          />
+          <Ionicons name="ios-notifications" color={tintColor} size={25} />
         )
       }
     }

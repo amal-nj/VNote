@@ -1,15 +1,23 @@
 import React, { Component } from "react";
-import { Text, View, AsyncStorage, Image, Alert } from "react-native";
+import {
+  Text,
+  View,
+  AsyncStorage,
+  Image,
+  Alert,
+  StyleSheet
+} from "react-native";
 import { Avatar, Button, Card, Title, Paragraph } from "react-native-paper";
 import store from "../redux/store";
-import {setFilteredPosts } from "../redux/actions";
+import { setFilteredPosts } from "../redux/actions";
 
 export default class PostCard extends Component {
   constructor(props) {
     super(props);
     this.state = {
       userid: "",
-      token: ""
+      token: "",
+      spinner:''
     };
     this.deletePost = this.deletePost.bind(this);
   }
@@ -20,6 +28,7 @@ export default class PostCard extends Component {
     this.setState({ userid: id, token: token });
   }
   async deletePost() {
+
     Alert.alert(
       "Delete",
       "Do you want to delete this post?",
@@ -27,44 +36,52 @@ export default class PostCard extends Component {
         {
           text: "Yes",
           onPress: () => {
-              console.log("id",this.props.post._id)
+            this.setState({spinner:true})
+            console.log("id", this.props.post._id);
             fetch(
-                `https://37dde31d.ngrok.io/api/post/delete/${this.props.post._id}`,
-                {
-                  method: "DELETE",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${this.state.token}`
-                  }
+              `https://vnote-api.herokuapp.com/api/post/delete/${this.props.post._id}`,
+              {
+                method: "DELETE",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${this.state.token}`
                 }
-              )
-                .then(data => {
-                  if (!data.ok) {
-                    throw new Error("Something went wrong");
-                  } 
-                })
-                .then(async res => {
-                  console.log("deleteing post");
-                  // this.updatePosts();
-                })
-                .catch(async err => {
-                  await Alert.alert("Error deleting post","Something went wrong");
-                  console.log("Error", err);
-                });
-            
+              }
+            )
+              .then(data => {
+                if (!data.ok) {
+                  throw new Error("Something went wrong");
+                }
+              })
+              .then(async res => {
+                this.setState({ spinner: false });
+
+                console.log("deleteing post");
+
+                // this.updatePosts();
+              })
+              .catch(async err => {
+                await Alert.alert(
+                  "Error deleting post",
+                  "Something went wrong"
+                );
+                this.setState({ spinner: false });
+
+                console.log("Error", err);
+              });
           }
         },
         {
           text: "Cancel",
-          onPress: () => {
-          },
+          onPress: () => {},
           style: "cancel"
         }
       ],
       { cancelable: false }
     );
+    this.setState({spinner:false})
 
-    }
+  }
   // async updatePosts() {
   //   function getDistanceFromLatLonInm(lat1, lon1, lat2, lon2) {
   //     var R = 6371; // Radius of the earth in km
@@ -117,42 +134,80 @@ export default class PostCard extends Component {
   render() {
     //   const date=new Date(this.props.post.updatedAt)
     //   console.log("hours", date.getHours())
-    console.log("here")
+    // console.log("here")
     let actions =
       this.props.post.user._id === this.state.userid ? (
         <Card.Actions>
-          <Button  onPress={() => this.props.navigation.navigate("EditModal",{
-              post: this.props.post,
-            })}>Edit</Button>
-          <Button onPress={this.deletePost}>Delete</Button>
+          <Button
+            onPress={() =>
+              this.props.navigation.navigate("EditModal", {
+                post: this.props.post
+              })
+            }
+            theme={{
+              colors: {
+                primary: "#000",
+                underlineColor: "transparent"
+              }
+            }}
+            style={style.button}
+          >
+            Edit
+          </Button>
+          <Button
+            onPress={this.deletePost}
+            style={style.button}
+            theme={{
+              colors: {
+                primary: "#000",
+                underlineColor: "transparent"
+              }
+            }}
+          >
+            Delete
+          </Button>
         </Card.Actions>
       ) : (
         <Text></Text>
       );
     return (
-      <Card onPress={()=>{console.log(this.props.navigation)
-          this.props.navigation.navigate("usersProfile",{user: this.props.post.user})}}>
-        <Card.Title 
-          title={`@${this.props.post.user.username}`}
-          subtitle={this.props.post.updatedAt}
-          right={props => (
-            <Avatar.Image
-            
-              {...props}
-              size={50}
-              source={{
-                uri:
-                  "https://pbs.twimg.com/profile_images/1168194986774552576/hHMau3Rz_400x400.jpg"
-              }}
-            />
-          )}
-        />
+      <View style={{ marginVertical: 5 }}>
+        <Card
+          style={{ borderRadius: 20 }}
+          onPress={() => {
+            console.log(this.props.navigation);
+            this.props.navigation.navigate("usersProfile", {
+              user: this.props.post.user
+            });
+          }}
+        >
+          <Card.Title />
+          <Card.Content>
+            <Text style={{fontSize:20}}>{`@${this.props.post.user.username}`}</Text>
+            <Paragraph style={{ textAlign: "right", alignSelf: "stretch" }}>
+              {this.props.post.body}
+            </Paragraph>
+            <Text style={{fontSize:10, color:'grey',textAlign:'right'}}>{this.props.post.updatedAt.split("T")[0]}</Text>
 
-        <Card.Content>
-          <Paragraph>{this.props.post.body}</Paragraph>
-        </Card.Content>
-        {actions}
-      </Card>
+          </Card.Content>
+          {actions}
+        </Card>
+      </View>
     );
   }
 }
+
+const style = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: -70,
+    backgroundColor: "white"
+  },
+  button: {
+    backgroundColor: "#ffe800",
+    color: "#023333",
+    margin: 5
+  }
+});

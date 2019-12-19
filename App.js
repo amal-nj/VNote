@@ -5,9 +5,15 @@ import { Provider as PaperProvider } from "react-native-paper";
 import { Provider } from "react-redux";
 import store from "./redux/store";
 import React from "react";
+import * as Font from 'expo-font';
 import AuthLoadingScreen from "./components/AuthLoadingScreen";
 import { createAppContainer, createSwitchNavigator } from "react-navigation";
+import { YellowBox } from 'react-native'
 
+YellowBox.ignoreWarnings([
+  'Unrecognized WebSocket connection option(s) `agent`, `perMessageDeflate`, `pfx`, `key`, `passphrase`, `cert`, `ca`, `ciphers`, `rejectUnauthorized`. Did you mean to put these under `headers`?'
+])
+console.ignoredYellowBox = ['Unrecognized']
 const AuthStack = createSwitchNavigator({
   Signin: SigninScreen,
   Register: RegisterScreen
@@ -26,7 +32,11 @@ const AppContainer = createAppContainer(
 );
 
 export default class App extends React.Component {
-
+componentDidMount(){
+  Font.loadAsync({
+    'lalezar': require('./assets/Lalezar-Regular.ttf'),
+  });
+}
   render() {
     return (
       <Provider store={store}>

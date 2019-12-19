@@ -3,14 +3,15 @@ import { Dimensions } from "react-native";
 import {
   KeyboardAvoidingView,
   View,
-  Button,
   Alert,
   Text,
   AsyncStorage,
-  StyleSheet
+  StyleSheet,
+  Image
 } from "react-native";
-import { HelperText, TextInput } from "react-native-paper";
+import { HelperText, TextInput,Button } from "react-native-paper";
 import axios from 'axios'
+import { ScrollView } from "react-native-gesture-handler";
 export default class RegisterScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -37,10 +38,11 @@ export default class RegisterScreen extends React.Component {
       const user = {
         username: this.state.username.toLowerCase(),
         email: this.state.email.toLowerCase(),
-        password: this.state.password
+        password: this.state.password,
+        avatar: Math.floor(Math.random() * 3)
       };
       
-      fetch("https://37dde31d.ngrok.io/api/auth/register",{method: "POST",body: JSON.stringify(user), headers: {
+      fetch("https://vnote-api.herokuapp.com/api/auth/register",{method: "POST",body: JSON.stringify(user), headers: {
         'Content-Type': 'application/json'
       }})
       .then(data=>{
@@ -75,23 +77,37 @@ export default class RegisterScreen extends React.Component {
 
   render() {
     return (
-      <KeyboardAvoidingView style={{ flexGrow: 1 }} behavior="padding" enabled>
+      <ScrollView contentContainerStyle={{ flex: 1}}>
+      <Image
+          source={require("../assets/register.png")}
+          style={{ flex: 1, width: null, height: null, resizeMode: "contain", marginTop:-250 }}
+        ></Image>
+   
         <View style={style.container}>
-          <Text>Register</Text>
           <TextInput
           label='User name'
           mode="outlined"
             onChangeText={username => this.setState({ username })}
             style={style.input}
             value={this.state.username}
+            error={this.state.error && this.state.username === ""}
+            theme={{
+                    colors: {
+                      primary:'#003c3c',
+                      underlineColor:'transparent',
+                      
+                    }
+                  }}
           />
           <HelperText
+          style={{ marginTop: -20 }}
+
             type="error"
             visible={this.state.error && this.state.username === ""}
           >
             Please a user name!
           </HelperText>
-
+       
           <TextInput
           label='Email'
           mode="outlined"
@@ -99,8 +115,18 @@ export default class RegisterScreen extends React.Component {
             onChangeText={email => this.setState({ email })}
             style={style.input}
             value={this.state.email}
+            error={this.state.error && !this.state.email.includes("@")}
+            theme={{
+                    colors: {
+                      primary:'#003c3c',
+                      underlineColor:'transparent',
+                      
+                    }
+                  }}
           />
           <HelperText
+          style={{ marginTop: -20 }}
+
             type="error"
             visible={this.state.error && !this.state.email.includes("@")}
           >
@@ -113,8 +139,18 @@ export default class RegisterScreen extends React.Component {
             onChangeText={password => this.setState({ password })}
             style={style.input}
             value={this.state.password}
+            error={this.state.error && (this.state.password === ""|| this.state.password<6)}
+            theme={{
+                    colors: {
+                      primary:'#003c3c',
+                      underlineColor:'transparent',
+                      
+                    }
+                  }}
           />
           <HelperText
+          style={{ marginTop: -20 }}
+
             type="error"
             visible={this.state.error && (this.state.password === ""|| this.state.password<6)}
           >
@@ -127,14 +163,26 @@ export default class RegisterScreen extends React.Component {
             onChangeText={confirmpassword => this.setState({ confirmpassword })}
             style={style.input}
             value={this.state.confirmpassword}
+            error={this.state.error && (this.state.confirmpassword === ""||this.state.confirmpassword !==this.state.password)}
+            theme={{
+                    colors: {
+                      primary:'#003c3c',
+                      underlineColor:'transparent',
+                      
+                    }
+                  }}
           />
           <HelperText
+          style={{ marginTop: -20 }}
+
             type="error"
             visible={this.state.error && this.state.confirmpassword === ""}
           >
             Please confirm your password!
           </HelperText>
           <HelperText
+          style={{ marginTop: 0 }}
+
             type="error"
             visible={this.state.error && this.state.confirmpassword !==this.state.password}
           >
@@ -145,17 +193,30 @@ export default class RegisterScreen extends React.Component {
             <Text style={style.spinnerTextStyle}>Processing ...</Text>
           )}
           {!this.state.spinner && (
-            <Button title="Register" onPress={this._registerHandler} />
+            <Button  onPress={this._registerHandler} style={style.button}
+              theme={{
+                    colors: {
+                      primary:'#fff',
+                      underlineColor:'transparent',
+                      
+                    }
+                  }}>Register</Button>
           )}
-     
+          <Text style={{fontSize: 10, marginVertical:15}}>_________________     Have an account?     _________________</Text>
           <Button
-            title="Sign In"
-            onPress={() => {
+          onPress={() => {
               this.props.navigation.navigate("Signin");
             }}
-          />
+            theme={{
+                    colors: {
+                      primary:'#000',
+                      underlineColor:'transparent',
+                      
+                    }
+                  }}          >Sign in</Button>
         </View>
-      </KeyboardAvoidingView>
+        </ScrollView>
+
     );
   }
 }
@@ -166,7 +227,8 @@ const style = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    marginTop: -250
   },
   input: {
     backgroundColor: "#FFFFFF",
@@ -180,5 +242,11 @@ const style = StyleSheet.create({
   },
   spinnerTextStyle: {
     textAlign: "center"
+  },
+  button: {
+    backgroundColor: "#ffe800",
+    color: "#023333",
+    marginTop: 20
+
   }
 });

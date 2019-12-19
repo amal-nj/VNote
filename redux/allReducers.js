@@ -48,12 +48,22 @@ const filteredNotificationsReducer = (state = [], action) => {
   }
 };
 
+const shouldFilterReducer = (state = true, action) => {
+  switch (action.type) {
+    case "setShouldFilter":
+      return action.payload;
+    default:
+      return state;
+  }
+};
+
 const allReducers = combineReducers({
   location: locationReducer,
   posts: postsReducer,
   filteredPosts: filteredPostsReducer,
   notifications: notifictionsReducer,
-  filteredNotifications: filteredNotificationsReducer
+  filteredNotifications: filteredNotificationsReducer,
+  shouldFilter: shouldFilterReducer
 });
 
 export default allReducers;
